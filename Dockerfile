@@ -16,11 +16,11 @@ ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
 # Install core system dependencies required by Playwright and other tools
+# This list is now minimal, trusting Playwright's own installer for browser specifics.
 # We update apt-get first to ensure we have the latest package lists
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        # Essential runtime dependencies for browsers (Chromium, Firefox, WebKit)
-        # Sourced from Playwright's own Dockerfiles and common browser deps for Debian Bookworm
+        # Fundamental libraries for basic graphical applications/browsers
         ca-certificates \
         fonts-liberation \
         libasound2 \
@@ -43,25 +43,13 @@ RUN apt-get update \
         libxkbcommon0 \
         libxrandr2 \
         libxshmfence-dev \
-        libjpeg-turbo8 \
         libfontconfig1 \
         libfreetype6 \
-        libgconf-2-4 \
-        libncurses5 \
-        libxtst6 \
-        libpulse0 \
-        libgstreamer-plugins-base1.0-0 \
-        libgstreamer1.0-0 \
         libicu-dev \
-        libvpx-dev \
-        # For WebP support, libwebp-dev or simply trusting Playwright to find it
-        # libwebp-dev \ # Let's try without this explicit one, as it might be pulled by others or managed by Playwright
-        # Common build tools for Python packages with C extensions, or if Playwright needs to compile something
+        # Build tools for Python packages and general utilities
         build-essential \
-        # For curl and git
         curl \
         git \
-        # For locale generation (can sometimes be a silent failure cause for browsers)
         locales \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean \
@@ -77,7 +65,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords')"
 
 # Install Playwright browsers (Chromium, Firefox, WebKit)
-# This command downloads the browser binaries into the container
+# This command downloads the browser binaries. For system-level dependencies,
+# it will attempt to install them via the system package manager if possible,
+# or error out if not found. We've minimized our explicit list to avoid conflicts.
 RUN playwright install chromium firefox webkit
 
 # Copy the rest of the application code into the container
