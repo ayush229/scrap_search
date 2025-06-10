@@ -1,6 +1,7 @@
-# Use a more general Debian-based image that often has better compatibility with system deps
-# python:3.9-slim-bookworm is Debian 12 (current stable Debian)
-FROM python:3.9-slim-bookworm
+# Use the full Debian 12 (Bookworm) Python image
+# This image contains a much more complete set of system libraries than the 'slim' version,
+# which is often necessary for headless browsers like Playwright's Chromium.
+FROM python:3.9-bookworm
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -16,45 +17,19 @@ ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
 # Install core system dependencies required by Playwright and other tools
-# This list is now minimal, trusting Playwright's own installer for browser specifics.
-# We update apt-get first to ensure we have the latest package lists
+# With a full base image, many dependencies are already present.
+# We'll keep a minimal set of crucial ones and those often needed by Playwright directly.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        # Fundamental libraries for basic graphical applications/browsers
-        ca-certificates \
-        fonts-liberation \
-        libasound2 \
-        libatk-bridge2.0-0 \
-        libcurl4 \
-        libdrm2 \
-        libexpat1 \
-        libgbm1 \
-        libglib2.0-0 \
-        libnspr4 \
-        libnss3 \
-        libpango-1.0-0 \
-        libpangocairo-1.0-0 \
-        libstdc++6 \
-        libx11-6 \
-        libxcomposite1 \
-        libxdamage1 \
-        libxext6 \
-        libxfixes3 \
-        libxkbcommon0 \
-        libxrandr2 \
-        libfontconfig1 \
-        libfreetype6 \
+        # Essential runtime dependencies for browsers (Chromium, Firefox, WebKit)
+        # libicu-dev is crucial for harfbuzz
         libicu-dev \
-        dbus \
-        # Build tools for Python packages and general utilities
+        # Basic build tools for Python packages and general utilities
         build-essential \
         curl \
         git \
-        locales \
     && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean \
-    # Generate locale (C.UTF-8 is common for containers, needs 'locales' package)
-    && locale-gen C.UTF-8
+    && apt-get clean
 
 # Copy requirements file and install Python dependencies
 COPY requirements.txt .
@@ -65,9 +40,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords')"
 
 # Install Playwright browsers (Chromium, Firefox, WebKit)
-# This command downloads the browser binaries. For system-level dependencies,
-# it will attempt to install them via the system package manager if possible,
-# or error out if not found. We've minimized our explicit list to avoid conflicts.
+# This command downloads the browser binaries and *should* now find all necessary
+# system dependencies within the more complete 'python:3.9-bookworm' environment.
 RUN playwright install chromium firefox webkit
 
 # Copy the rest of the application code into the container
