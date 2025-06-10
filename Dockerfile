@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Set environment variables for Playwright and locale
 # PLAYWRIGHT_BROWSERS_PATH ensures browsers are installed in a known location
-# DEBIAN_FRONTEND=noninteractive prevents apt-get from asking interactive questions
+# DEBIAN_FRONTEND=noninteractive prevents apt-get from asking interactive interactive questions
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright/
 ENV DEBIAN_FRONTEND=noninteractive
 # Set a consistent locale for the container environment
@@ -42,10 +42,10 @@ RUN apt-get update \
         libxfixes3 \
         libxkbcommon0 \
         libxrandr2 \
-        libxshmfence-dev \
         libfontconfig1 \
         libfreetype6 \
         libicu-dev \
+        dbus \
         # Build tools for Python packages and general utilities
         build-essential \
         curl \
