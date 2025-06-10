@@ -1,20 +1,21 @@
 # Use a more general Debian-based image that often has better compatibility with system deps
-# python:3.9-slim-bookworm is Debian 12
+# python:3.9-slim-bookworm is Debian 12 (current stable Debian)
 FROM python:3.9-slim-bookworm
 
-# Set the working directory
+# Set the working directory inside the container
 WORKDIR /app
 
 # Set environment variables for Playwright
+# PLAYWRIGHT_BROWSERS_PATH ensures browsers are installed in a known location
+# DEBIAN_FRONTEND=noninteractive prevents apt-get from asking interactive questions
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright/
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install core system dependencies required by Playwright
-# and then allow 'playwright install' to handle the rest.
-# These are the absolute minimum common deps for browser engines on Debian.
+# Install core system dependencies required by Playwright and other tools
+# We update apt-get first to ensure we have the latest package lists
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        # Core libraries for graphics, fonts, etc.
+        # Core libraries for graphics, fonts, etc. needed by browsers
         ca-certificates \
         fonts-liberation \
         libasound2 \
@@ -37,9 +38,9 @@ RUN apt-get update \
         libxkbcommon0 \
         libxrandr2 \
         libxshmfence-dev \
-        # Development tools for compilation if needed
+        # Essential build tools (might be needed by some Python packages or Playwright's internal build process)
         build-essential \
-        # For curl and git
+        # Networking tools
         curl \
         git \
     && rm -rf /var/lib/apt/lists/* \
@@ -49,22 +50,21 @@ RUN apt-get update \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# --- ADD THIS SECTION FOR NLTK DATA DOWNLOAD ---
+# Download NLTK data during the Docker build process
+# This ensures 'punkt' and 'stopwords' are available when the application runs
 RUN python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords')"
-# If you want to download to a specific path for NLTK, you could add:
-# ENV NLTK_DATA=/usr/local/nltk_data
-# RUN python -m nltk.downloader -d /usr/local/nltk_data punkt stopwords
-# Then ensure your Python code looks in NLTK_DATA or a path in nltk.data.path
 
-# Install Playwright browsers manually after system deps
-# This command specifically downloads the browser binaries.
+# Install Playwright browsers (Chromium, Firefox, WebKit)
+# This command downloads the browser binaries into the container
 RUN playwright install chromium firefox webkit
 
-# Copy the rest of the application code
+# Copy the rest of the application code into the container
 COPY . .
 
-# Expose the port FastAPI will run on
-EXPOSE 8000
+# Expose port 8080. This is the port your FastAPI application will listen on,
+# and it should match the port you've configured Railway to expose.
+EXPOSE 8080
 
-# Command to run the FastAPI application
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Command to run the FastAPI application using Uvicorn
+# The application will listen on 0.0.0.0 (all interfaces) on port 8080
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8080"]
