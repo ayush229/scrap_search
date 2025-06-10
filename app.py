@@ -57,8 +57,13 @@ async def scrap_and_store(request: ScrapAndStoreRequest):
             stdout, stderr = await process.communicate()
 
             if process.returncode != 0:
-                print(f"Scrapy error for {url}: {stderr.decode()}")
-                raise HTTPException(status_code=500, detail=f"Scraping failed for {url}: {stderr.decode()}")
+                # MODIFIED: Print and include stderr in the HTTPException detail
+                error_message = stderr.decode(errors='ignore').strip() # Decode with error handling
+                print(f"Scrapy process returned non-zero exit code for {url}. Stderr: {error_message}")
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Scraping failed for {url}. Error: {error_message if error_message else 'Unknown Scrapy error (no stderr output). See container logs for more details.'}"
+                )
 
             # Decode and parse the JSON output from Scrapy
             scraped_items = json.loads(stdout.decode())
@@ -116,4 +121,4 @@ async def query_search(request: QuerySearchRequest):
     }
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8080) # Changed port to 8080
