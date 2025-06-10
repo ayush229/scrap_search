@@ -49,6 +49,13 @@ RUN apt-get update \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# --- ADD THIS SECTION FOR NLTK DATA DOWNLOAD ---
+RUN python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords')"
+# If you want to download to a specific path for NLTK, you could add:
+# ENV NLTK_DATA=/usr/local/nltk_data
+# RUN python -m nltk.downloader -d /usr/local/nltk_data punkt stopwords
+# Then ensure your Python code looks in NLTK_DATA or a path in nltk.data.path
+
 # Install Playwright browsers manually after system deps
 # This command specifically downloads the browser binaries.
 RUN playwright install chromium firefox webkit
