@@ -8,16 +8,10 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 import nltk
 
-# Download NLTK data if not already present
-try:
-    nltk.data.find('corpora/stopwords')
-except nltk.downloader.DownloadError:
-    nltk.download('stopwords')
-try:
-    nltk.data.find('tokenizers/punkt')
-except nltk.downloader.DownloadError:
-    nltk.download('punkt')
-
+# NLTK data is now downloaded during Docker build.
+# We don't need the programmatic download check here anymore.
+# We just need to ensure the data is found by NLTK.
+# nltk.data.path.append('/usr/local/nltk_data') # Uncomment if you specified a custom path in Dockerfile
 
 class VectorStore:
     def __init__(self, data_dir="data"):
@@ -36,6 +30,8 @@ class VectorStore:
         text = re.sub(r'[^a-zA-Z\s]', '', text)
         # Tokenize and remove stopwords
         words = word_tokenize(text)
+        # Ensure stopwords are loaded - NLTK expects them.
+        # This will now succeed because we downloaded them in the Dockerfile.
         words = [word for word in words if word not in stopwords.words('english')]
         return " ".join(words)
 
@@ -62,7 +58,7 @@ class VectorStore:
                 # For now, if the original content of the URL changes, we update
                 if self.url_map[agent_key][url] == content: # Check if content has actually changed
                     return # No update needed
-                
+
                 # If content changes, find and replace or just re-add and re-vectorize
                 # For simplicity, we'll re-add and update original content
                 self.url_map[agent_key][url] = content # Update original content
@@ -92,7 +88,7 @@ class VectorStore:
         query_vector = vectorizer.transform([preprocessed_query])
 
         similarities = cosine_similarity(query_vector, corpus_vectors).flatten()
-        
+
         # Get indices of top_n most similar documents
         # We need to make sure we don't ask for more than available
         top_indices = similarities.argsort()[-min(top_n, len(similarities)):][::-1]
@@ -103,7 +99,7 @@ class VectorStore:
         for idx in top_indices:
             if idx < len(original_contents):
                 matched_content.append(original_contents[idx])
-        
+
         return " ".join(matched_content) if matched_content else None
 
     def _save_agent_data(self, agent_key: str):
