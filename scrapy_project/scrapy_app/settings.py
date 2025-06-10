@@ -3,18 +3,13 @@ BOT_NAME = "scrapy_app"
 SPIDER_MODULES = ["scrapy_app.spiders"]
 NEWSPIDER_MODULE = "scrapy_app.spiders"
 
-ROBOTSTXT_OBEY = False # Be cautious with this, but necessary for some scraping
+ROBOTSTXT_OBEY = False # Be cautious with this, but often necessary for scraping dynamic content
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 CONCURRENT_REQUESTS = 4 # Adjust based on your system resources and target website
 
 # Configure a delay for requests for the same website (default: 0)
-# See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
-# See also autothrottle settings and docs
 DOWNLOAD_DELAY = 1 # Be polite, especially with Playwright
-# The download delay setting will honor only one of:
-# CONCURRENT_REQUESTS_PER_DOMAIN = 1
-# CONCURRENT_REQUESTS_PER_IP = 1
 
 # Disable cookies (enabled by default)
 # COOKIES_ENABLED = False
@@ -22,51 +17,31 @@ DOWNLOAD_DELAY = 1 # Be polite, especially with Playwright
 # Disable Telnet Console (enabled by default)
 # TELNETCONSOLE_ENABLED = False
 
-# Override the default request headers:
-# DEFAULT_REQUEST_HEADERS = {
-#    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-#    "Accept-Language": "en",
-# }
-
-# Enable or disable spider middlewares
-# See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-# SPIDER_MIDDLEWARES = {
-#    "scrapy_app.middlewares.ScrapyAppSpiderMiddleware": 543,
+# DOWNLOADER_MIDDLEWARES = {
+#     "scrapy_app.middlewares.PlaywrightMiddleware": 800, # Higher priority
 # }
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    "scrapy_app.middlewares.PlaywrightMiddleware": 800, # Higher priority
+    "scrapy_app.middlewares.PlaywrightMiddleware": 800, # Higher priority for Playwright to handle requests
 }
 
-# Enable or disable extensions
-# See https://docs.scrapy.org/en/latest/topics/extensions.html
-# EXTENSIONS = {
-#    "scrapy.extensions.telnet.TelnetConsole": None,
-# }
 
 # Configure item pipelines
-# See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES = {
-    # "scrapy_app.pipelines.ScrapyAppPipeline": 300,
-}
+# ITEM_PIPELINES = {
+#     # "scrapy_app.pipelines.ScrapyAppPipeline": 300,
+# }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
 # AUTOTHROTTLE_ENABLED = True
-# The initial download delay
 # AUTOTHROTTLE_START_DELAY = 5
-# The maximum download delay to be set in case of high latencies
 # AUTOTHROTTLE_MAX_DELAY = 60
-# The average number of requests Scrapy should be sending in parallel to
-# each remote server
 # AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
-# Enable showing throttling stats for every response received:
 # AUTOTHROTTLE_DEBUG = False
 
 # Enable and configure HTTP caching (disabled by default)
-# See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
 # HTTPCACHE_ENABLED = True
 # HTTPCACHE_EXPIRATION_SECS = 0
 # HTTPCACHE_DIR = "httpcache"
@@ -76,9 +51,20 @@ ITEM_PIPELINES = {
 # Playwright settings
 PLAYWRIGHT_LAUNCH_OPTIONS = {
     "headless": True, # Set to False for debugging
-    "timeout": 20000, # 20 seconds
+    "timeout": 20000, # 20 seconds for browser launch
+    "args": [
+        "--no-sandbox",             # Crucial for Docker environments
+        "--disable-setuid-sandbox", # Crucial for Docker environments
+        "--disable-gpu",            # No GPU in typical Docker containers
+        "--disable-dev-shm-usage",  # Use /tmp instead of /dev/shm for shared memory
+        "--no-zygote",              # Sometimes helps with stability
+        "--single-process",         # Simpler process model
+        "--incognito",              # Start in incognito mode for clean sessions
+        "--window-size=1280,720"     # Set a consistent window size
+    ]
 }
-PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT = 30000 # 30 seconds for navigation
+PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT = 30000 # 30 seconds for page navigation (e.g., page.goto)
 
 # Set log level (INFO, DEBUG, ERROR, WARNING, CRITICAL)
-LOG_LEVEL = "INFO"
+# CHANGED TO DEBUG for better visibility into scraping issues
+LOG_LEVEL = "DEBUG"
