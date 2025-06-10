@@ -1,0 +1,10 @@
+scrapy
+playwright
+playwright-stealth
+beautifulsoup4
+fastapi
+uvicorn
+python-dotenv
+scikit-learn # For vectorization (TfidfVectorizer)
+numpy # Dependency for scikit-learn
+nltk # For text processing (optional, but good for cleaning)
