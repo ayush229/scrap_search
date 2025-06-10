@@ -5,9 +5,9 @@ FROM python:3.9-slim-bookworm
 # Set the working directory inside the container
 WORKDIR /app
 
-# Set environment variables for Playwright
+# Set environment variables for Playwright and locale
 # PLAYWRIGHT_BROWSERS_PATH ensures browsers are installed in a known location
-# DEBIAN_FRONTEND=noninteractive prevents apt-get from asking interactive interactive questions
+# DEBIAN_FRONTEND=noninteractive prevents apt-get from asking interactive questions
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright/
 ENV DEBIAN_FRONTEND=noninteractive
 # Set a consistent locale for the container environment
@@ -20,7 +20,7 @@ ENV LC_ALL=C.UTF-8
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         # Essential runtime dependencies for browsers (Chromium, Firefox, WebKit)
-        # Sourced from various Playwright Dockerfile examples and common Debian browser deps
+        # Sourced from Playwright's own Dockerfiles and common browser deps for Debian Bookworm
         ca-certificates \
         fonts-liberation \
         libasound2 \
@@ -43,14 +43,19 @@ RUN apt-get update \
         libxkbcommon0 \
         libxrandr2 \
         libxshmfence-dev \
-        libjpeg62-turbo \
-        libwebp6 \
-        libharfbuzz-icu7 \
+        libjpeg-turbo8 \
         libfontconfig1 \
         libfreetype6 \
         libgconf-2-4 \
         libncurses5 \
         libxtst6 \
+        libpulse0 \
+        libgstreamer-plugins-base1.0-0 \
+        libgstreamer1.0-0 \
+        libicu-dev \
+        libvpx-dev \
+        # For WebP support, libwebp-dev or simply trusting Playwright to find it
+        # libwebp-dev \ # Let's try without this explicit one, as it might be pulled by others or managed by Playwright
         # Common build tools for Python packages with C extensions, or if Playwright needs to compile something
         build-essential \
         # For curl and git
