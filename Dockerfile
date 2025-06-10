@@ -1,5 +1,6 @@
 # Use a more general Debian-based image that often has better compatibility with system deps
-FROM python:3.9-slim-bookworm # buster is old, bookworm is current stable Debian
+# buster is old, bookworm is current stable Debian
+FROM python:3.9-slim-bookworm
 
 # Set the working directory
 WORKDIR /app
