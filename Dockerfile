@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Set environment variables for Playwright and locale
 # PLAYWRIGHT_BROWSERS_PATH ensures browsers are installed in a known location
-# DEBIAN_FRONTEND=noninteractive prevents apt-get from asking interactive questions
+# DEBIAN_FRONTEND=noninteractive prevents apt-get from asking interactive interactive questions
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright/
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8    # Set a consistent locale
