@@ -5,17 +5,20 @@ FROM python:3.9-slim-bookworm
 # Set the working directory inside the container
 WORKDIR /app
 
-# Set environment variables for Playwright
+# Set environment variables for Playwright and locale
 # PLAYWRIGHT_BROWSERS_PATH ensures browsers are installed in a known location
 # DEBIAN_FRONTEND=noninteractive prevents apt-get from asking interactive questions
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright/
 ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=C.UTF-8    # Set a consistent locale
+ENV LC_ALL=C.UTF-8  # Set a consistent locale
 
 # Install core system dependencies required by Playwright and other tools
 # We update apt-get first to ensure we have the latest package lists
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        # Core libraries for graphics, fonts, etc. needed by browsers
+        # Essential runtime dependencies for browsers (Chromium, Firefox, WebKit)
+        # Sourced from various Playwright Dockerfile examples and common Debian browser deps
         ca-certificates \
         fonts-liberation \
         libasound2 \
@@ -38,13 +41,25 @@ RUN apt-get update \
         libxkbcommon0 \
         libxrandr2 \
         libxshmfence-dev \
-        # Essential build tools (might be needed by some Python packages or Playwright's internal build process)
+        libjpeg62-turbo \
+        libwebp6 \
+        libharfbuzz-icu7 \
+        libfontconfig1 \
+        libfreetype6 \
+        libgconf-2-4 \
+        libncurses5 \
+        libxtst6 \
+        # Common build tools for Python packages with C extensions, or if Playwright needs to compile something
         build-essential \
-        # Networking tools
+        # For curl and git
         curl \
         git \
+        # For locale generation (can sometimes be a silent failure cause for browsers)
+        locales \
     && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    && apt-get clean \
+    # Generate locale (C.UTF-8 is common for containers, needs 'locales' package)
+    && locale-gen C.UTF-8
 
 # Copy requirements file and install Python dependencies
 COPY requirements.txt .
