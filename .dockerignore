@@ -1,0 +1,14 @@
+.git
+.gitignore
+.env
+__pycache__/
+*.pyc
+*.log
+.vscode/
+.DS_Store
+*.db
+data/
+.venv/
+venv/
+node_modules/
+npm-debug.log
