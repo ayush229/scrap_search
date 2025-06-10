@@ -5,13 +5,15 @@ FROM python:3.9-slim-bookworm
 # Set the working directory inside the container
 WORKDIR /app
 
-# Set environment variables for Playwright and locale
+# Set environment variables for Playwright
 # PLAYWRIGHT_BROWSERS_PATH ensures browsers are installed in a known location
 # DEBIAN_FRONTEND=noninteractive prevents apt-get from asking interactive interactive questions
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright/
 ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG=C.UTF-8    # Set a consistent locale
-ENV LC_ALL=C.UTF-8  # Set a consistent locale
+# Set a consistent locale for the container environment
+ENV LANG=C.UTF-8
+# Set a consistent locale for all locale categories
+ENV LC_ALL=C.UTF-8
 
 # Install core system dependencies required by Playwright and other tools
 # We update apt-get first to ensure we have the latest package lists
