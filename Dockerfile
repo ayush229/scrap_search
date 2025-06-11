@@ -1,13 +1,14 @@
-# Use a more general Debian-based image that often has better compatibility with system deps
-# python:3.9-slim-bookworm is Debian 12 (current stable Debian)
-FROM python:3.9-slim-bookworm
+# Use the full Debian 12 (Bookworm) Python image
+# This image contains a much more complete set of system libraries than the 'slim' version,
+# which is often necessary for headless browsers like Playwright's Chromium.
+FROM python:3.9-bookworm
 
 # Set the working directory inside the container
 WORKDIR /app
 
 # Set environment variables for Playwright and locale
 # PLAYWRIGHT_BROWSERS_PATH ensures browsers are installed in a known location
-# DEBIAN_FRONTEND=noninteractive prevents apt-get from asking interactive questions
+# DEBIAN_FRONTEND=noninteractive prevents apt-get from asking interactive interactive questions
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright/
 ENV DEBIAN_FRONTEND=noninteractive
 # Set a consistent locale for the container environment
@@ -16,8 +17,8 @@ ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
 # Install core system dependencies required by Playwright and other tools
-# This list is now minimal, trusting Playwright's own installer for browser specifics.
-# We update apt-get first to ensure we have the latest package lists
+# With a full base image, many dependencies are already present.
+# We'll keep a minimal set of crucial ones and those often needed by Playwright directly.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         # Fundamental libraries for basic graphical applications/browsers
@@ -42,10 +43,10 @@ RUN apt-get update \
         libxfixes3 \
         libxkbcommon0 \
         libxrandr2 \
-        libxshmfence-dev \
         libfontconfig1 \
         libfreetype6 \
         libicu-dev \
+        dbus \
         # Build tools for Python packages and general utilities
         build-essential \
         curl \
